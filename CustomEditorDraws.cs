@@ -8,7 +8,7 @@ namespace MuonhoryoLibrary.UnityEditor
 {
     /// <summary>
     /// Source of properties with tag "Inspector field" must be public field/private field with [SerializeField] attribute
-    /// and named by {property name}_{property type}.
+    /// and named by {property name}_{property type}. SerializedObject cannot be created by Editor.
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
@@ -216,7 +216,7 @@ namespace MuonhoryoLibrary.UnityEditor
         public static void DrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey,TValue> editor,
             string inspectorLabelText = "")
         {
-            DrawDictionary(editor.DrawableDictionary, new SerializedObject(editor), editor, inspectorLabelText);
+            DrawDictionary(editor.DrawableDictionary,editor.serializedObject, editor, inspectorLabelText);
         }
     }
 }
