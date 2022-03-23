@@ -127,12 +127,12 @@ namespace MuonhoryoLibrary.UnityEditor
                 {
                     void ShowHeader(int index,bool isShowingHeader=false)
                     {
-                        if (EditorGUILayout.BeginFoldoutHeaderGroup(isShowingHeader, keyArray[index].ToString()))
+                        if (EditorGUILayout.BeginToggleGroup(keyArray[index].ToString(),isShowingHeader))
                         {
                             dictHelper.CurrentEditIndex = index;
                             ShowSelected(index);
                         }
-                        EditorGUILayout.EndFoldoutHeaderGroup();
+                        EditorGUILayout.EndToggleGroup();
                     }
                     void ShowSelected(int index)
                     {
