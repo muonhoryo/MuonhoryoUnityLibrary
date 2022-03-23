@@ -132,17 +132,27 @@ namespace MuonhoryoLibrary.UnityEditor
                             dictHelper.CurrentEditIndex = index;
                             ShowSelected(index);
                         }
+                        else if (isShowingHeader)
+                        {
+                            dictHelper.CurrentEditIndex = -1;
+                        }
                         EditorGUILayout.EndToggleGroup();
                     }
                     void ShowSelected(int index)
                     {
                         dictHelper.CurrentValue = showingDictionary[keyArray[index]];
                         EditorGUILayout.PropertyField(serializedObj.FindProperty("CurrentValue_" + typeof(TValue).Name));
+                        serializedObj.ApplyModifiedProperties();
                         if (GUILayout.Button("Remove"))
                         {
                             showingDictionary.Remove(keyArray[index]);
                             isChanged = true;
                             dictHelper.CurrentEditIndex = -1;
+                        }
+                        else if (!dictHelper.CurrentValue.Equals(showingDictionary[keyArray[index]]))
+                        {
+                            showingDictionary[keyArray[index]] = dictHelper.CurrentValue;
+                            isChanged = true;
                         }
                     }
                     void ShowHeaderAndSelected(int index)
