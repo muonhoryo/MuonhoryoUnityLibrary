@@ -105,12 +105,12 @@ namespace MuonhoryoLibrary.UnityEditor
         /// <param name="inspectorLabelText"></param>
         public static void DrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
             SerializedObject serializedObj, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
-            string inspectorLabelText = "")
+            ISerializator serializator,string inspectorLabelText = "")
         {
             if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList, inspectorLabelText))
             {
                 showingDictionary = Serialization.Serialization.DictionarySerializator.
-                    Read<TKey,TValue>(dictHelper.SerializationPath, UnityJsonSerializer.Instance);
+                    Read<TKey,TValue>(dictHelper.SerializationPath, serializator);
                 bool isChanged = false;
                 TKey[] keyArray = new TKey[showingDictionary.Count];
                 showingDictionary.Keys.CopyTo(keyArray, 0);
@@ -209,16 +209,29 @@ namespace MuonhoryoLibrary.UnityEditor
                 //Update dictionary
                 if (isChanged)
                 {
-                    Serialization.Serialization.DictionarySerializator.Write(dictHelper.SerializationPath, showingDictionary,
-                    UnityJsonSerializer.Instance);
+                    Serialization.Serialization.DictionarySerializator.Write(dictHelper.SerializationPath,
+                        showingDictionary,serializator);
                 }
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
-        public static void DrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey,TValue> editor,
+        public static void DrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
+           SerializedObject serializedObj, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
+           string inspectorLabelText = "")
+        {
+            DrawDictionary(showingDictionary, serializedObj, dictHelper,UnityJsonSerializer.Instance,
+                inspectorLabelText);
+        }
+        public static void DrawDictionary<TKey, TValue>(DictionaryUnityEditor<TKey, TValue> editor,
             string inspectorLabelText = "")
         {
-            DrawDictionary(editor.DrawableDictionary,editor.serializedObject, editor, inspectorLabelText);
+            DrawDictionary(editor,UnityJsonSerializer.Instance,inspectorLabelText);
+        }
+        public static void DrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey,TValue> editor,
+            ISerializator serializator,string inspectorLabelText = "")
+        {
+            DrawDictionary(editor.DrawableDictionary,editor.serializedObject, editor,serializator,
+                inspectorLabelText);
         }
     }
 }
