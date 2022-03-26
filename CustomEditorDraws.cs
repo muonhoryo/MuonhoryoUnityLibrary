@@ -1,30 +1,19 @@
-﻿using System.Runtime.Serialization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using MuonhoryoLibrary.Serialization;
 
 namespace MuonhoryoLibrary.UnityEditor
 {
-    /// <summary>
-    /// Source of properties with tag "Inspector field" must be public field/private field with [SerializeField] attribute
-    /// and named by {property name}_{property type}. SerializedObject cannot be created by Editor.
-    /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
     public interface IDictionaryEditorDrawHelper<TKey, TValue>
     {
-        public bool isShowingList { get; set; }
-        public string SerializationPath { get; }
-        /// <summary>
-        /// Inspector field
-        /// </summary>
-        public TKey NewKey { get; set; }
-        /// <summary>
-        /// Inspector field
-        /// </summary>
-        public TValue CurrentValue { get; set; }
-        public int CurrentEditIndex { get; set; }
+        bool isShowingList { get; set; }
+        string SerializationPath { get; }
+        TKey NewKey { get; set; }
+        TValue CurrentValue { get; set; }
+        string NewKeyPropertyName { get; }
+        string CurrentValuePropertyName { get; }
+        int CurrentEditIndex { get; set; }
     }
     public abstract class DictionaryUnityEditor<TKey, TValue> : Editor,IDictionaryEditorDrawHelper<TKey,TValue>
     {
@@ -39,6 +28,8 @@ namespace MuonhoryoLibrary.UnityEditor
         string IDictionaryEditorDrawHelper<TKey, TValue>.SerializationPath => serializationPath;
         public abstract TKey NewKey { get; set; }
         public abstract TValue CurrentValue { get; set; }
+        public abstract string NewKeyPropertyName { get; }
+        public abstract string CurrentValuePropertyName { get; }
         private int currentEditIndex;
         int IDictionaryEditorDrawHelper<TKey, TValue>.CurrentEditIndex
         {
@@ -141,7 +132,8 @@ namespace MuonhoryoLibrary.UnityEditor
                     void ShowSelected(int index)
                     {
                         dictHelper.CurrentValue = showingDictionary[keyArray[index]];
-                        EditorGUILayout.PropertyField(serializedObj.FindProperty("CurrentValue_" + typeof(TValue).Name));
+                        EditorGUILayout.PropertyField(
+                            serializedObj.FindProperty(dictHelper.CurrentValuePropertyName));
                         serializedObj.ApplyModifiedProperties();
                         if (GUILayout.Button("Remove"))
                         {
@@ -204,7 +196,7 @@ namespace MuonhoryoLibrary.UnityEditor
                     }
                 }
                 //Show adding menu
-                EditorGUILayout.PropertyField(serializedObj.FindProperty("NewKey_" + typeof(TKey).Name),
+                EditorGUILayout.PropertyField(serializedObj.FindProperty(dictHelper.NewKeyPropertyName),
                     new GUIContent("New element"));
                 serializedObj.ApplyModifiedProperties();
                 if (GUILayout.Button("Add") && dictHelper.NewKey != null && 
