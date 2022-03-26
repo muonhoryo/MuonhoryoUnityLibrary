@@ -41,7 +41,7 @@ namespace MuonhoryoLibrary.UnityEditor
     /// Help to draw interface.
     /// </summary>
     /// <typeparam name="TInterfaceType"></typeparam>
-    public abstract class InterfaceDrawer<TInterfaceType> where TInterfaceType:class
+    public class InterfaceDrawer<TInterfaceType> where TInterfaceType:class
     {
         public TInterfaceType DrawedInterface;
         public MonoBehaviour InterfaceComponent;
