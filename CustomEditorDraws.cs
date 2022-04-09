@@ -166,24 +166,6 @@ namespace MuonhoryoLibrary.UnityEditor
                             for (int i = 0; i < showingDictionary.Count; i++)
                             {
                                 ShowHeaderAndSelected(i);
-                                /*
-                                dictHelper.TemporalValue = showingDictionary[keyArray[i]];
-                                EditorGUILayout.BeginHorizontal();
-                                EditorGUILayout.
-                                EditorGUILayout.PropertyField(serialiabledObj.FindProperty("temporalValue_" + typeof(TValue).Name),
-                                    new GUIContent(keyArray[i].ToString()));
-                                serialiabledObj.ApplyModifiedProperties();
-                                if (GUILayout.Button("Remove"))
-                                {
-                                    showingDictionary.Remove(keyArray[i]);
-                                    isChanged = true;
-                                }
-                                else if (!dictHelper.TemporalValue.Equals(showingDictionary[keyArray[i]]))
-                                {
-                                    showingDictionary[keyArray[i]] = dictHelper.TemporalValue;
-                                    isChanged = true;
-                                }
-                                EditorGUILayout.EndHorizontal();*/
                             }
                         }
                     }

@@ -2,9 +2,19 @@
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using MuonhoryoLibrary.Collections;
 
 namespace MuonhoryoLibrary.Unity
 {
+    public class InvalidIdReservatorException : Exception
+    {
+        public InvalidIdReservatorException(string objectName)
+        {
+            this.objectName= objectName;
+        }
+        private string objectName;
+        public override string Message =>"Reservator with name \""+objectName+"\" has been used.";
+    }
     /// <summary>
     /// Execute added actions as queue in main thread in Update().
     /// If current frame time more then MaxFrameTime,stops until next Update().
@@ -35,28 +45,32 @@ namespace MuonhoryoLibrary.Unity
         private static short NextId = short.MinValue;
         private sealed class ThreadActionQueue : IEnumerable<Action>
         {
-            private sealed class ThreadActionQueveEnumerator : IEnumerator<Action>
+            private sealed class ThreadActionQueueEnumerator : IEnumerator<Action>
             {
-                private ThreadActionQueveEnumerator() { }
-                public ThreadActionQueveEnumerator(List<Action> ActionsQueve)
+                private ThreadActionQueueEnumerator() { }
+                public ThreadActionQueueEnumerator(SingleLinkedList<Action> ActionsQueue)
                 {
-                    this.ActionsQueve = ActionsQueve;
+                    if (ActionsQueue == null)
+                    {
+                        throw new ArgumentException("ActionsQueue");
+                    }
+                    this.ActionsQueue = ActionsQueue;
                 }
                 private Action GetCurrentAction()
                 {
-                    if (ActionsQueve.Count <= 0)
+                    if (ActionsQueue.Count <= 0)
                     {
-                        throw new IndexOutOfRangeException();
+                        throw new IndexOutOfRangeException("ActionsQueue.Count");
                     }
-                    Action action = ActionsQueve[0];
-                    ActionsQueve.RemoveAt(0);
+                    Action action = ActionsQueue[0];
+                    ActionsQueue.RemoveFirst();
                     return action;
                 }
                 object IEnumerator.Current => GetCurrentAction();
                 Action IEnumerator<Action>.Current => GetCurrentAction();
                 bool IEnumerator.MoveNext()
                 {
-                    if (ActionsQueve.Count > 0)
+                    if (ActionsQueue.Count > 0)
                     {
                         return true;
                     }
@@ -67,40 +81,75 @@ namespace MuonhoryoLibrary.Unity
                 }
                 void IEnumerator.Reset() { }
                 void IDisposable.Dispose() { }
-                private readonly List<Action> ActionsQueve;
+                private readonly SingleLinkedList<Action> ActionsQueue;
             }
             private ThreadActionQueue() { }
-            public ThreadActionQueue(List<Action> actionsList, Action OnQueveDone) : this(actionsList, OnQueveDone, NextId++) { }
-            public ThreadActionQueue(List<Action> actionsList, Action OnQueryDone, short id)
+            public ThreadActionQueue(SingleLinkedList<Action> actionsList, Action OnQueueDone) :
+                this(actionsList, OnQueueDone, NextId++) { }
+            public ThreadActionQueue(SingleLinkedList<Action> actionsList, Action OnQueueDone, short id)
             {
-                QueveEnumerator = new ThreadActionQueveEnumerator(actionsList);
-                OnQueveDone = OnQueryDone;
-                QueveId = id;
+                QueueEnumerator = new ThreadActionQueueEnumerator(actionsList);
+                this.OnQueueDone = OnQueueDone;
+                QueueId = id;
             }
-            private readonly ThreadActionQueveEnumerator QueveEnumerator;
-            IEnumerator<Action> IEnumerable<Action>.GetEnumerator() => QueveEnumerator;
-            IEnumerator IEnumerable.GetEnumerator() => QueveEnumerator;
-            public readonly short QueveId;
-            public readonly Action OnQueveDone;
+            public ThreadActionQueue(IEnumerable<Action> collection,Action OnQueueDone,short id)
+            {
+                SingleLinkedList<Action> list = new SingleLinkedList<Action> { };
+                foreach(Action action in collection)
+                {
+                    list.AddLast(action);
+                }
+                QueueEnumerator = new ThreadActionQueueEnumerator(list);
+                this.OnQueueDone = OnQueueDone;
+                QueueId = id;
+            }
+            public ThreadActionQueue(IEnumerable<Action> collection, Action OnQueueDone) :
+                this(collection, OnQueueDone, NextId++)
+            { }
+            private readonly ThreadActionQueueEnumerator QueueEnumerator;
+            IEnumerator<Action> IEnumerable<Action>.GetEnumerator() => QueueEnumerator;
+            IEnumerator IEnumerable.GetEnumerator() => QueueEnumerator;
+            public readonly short QueueId;
+            public readonly Action OnQueueDone;
         }
-        private readonly List<ThreadActionQueue> ThreadActionsQueues = new List<ThreadActionQueue> { };
+        private readonly SingleLinkedList<ThreadActionQueue> ThreadActionsQueues =
+            new SingleLinkedList<ThreadActionQueue> { };
         //Singltone
         private static ThreadManager singltone;
         ThreadManager ISingltone<ThreadManager>.Singltone { get => singltone; set => singltone = value; }
 
+        private short AddQueue(ThreadActionQueue queue)
+        {
+            ThreadActionsQueues.AddLast(queue);
+            return queue.QueueId;
+        }
+        private void AddQueueWithReservator(ThreadActionQueue queue,ThreadQueueReservator reservator)
+        {
+            if (!reservator.isBeingUsed)
+            {
+                lock (locker)
+                {
+                    ThreadActionsQueues.AddLast(queue);
+                    reservator.SetUse();
+                }
+            }
+            else
+            {
+                throw new InvalidIdReservatorException("reservator");
+            }
+        }
         /// <summary>
         /// Add actions in queue. Executed actions are removed from queue.
         /// </summary>
         /// <param name="actionsList"></param>
         /// <param name="onQueueDoneAction"></param>
         /// <returns></returns>
-        public short AddActionsQueue(List<Action> actionsList, Action onQueueDoneAction)
+        public short AddActionsQueue(IEnumerable<Action> actions, Action onQueueDoneAction)
         {
             lock (locker)
             {
-                ThreadActionQueue queve = new ThreadActionQueue(actionsList, onQueueDoneAction);
-                ThreadActionsQueues.Add(queve);
-                return queve.QueveId;
+                ThreadActionQueue queue = new ThreadActionQueue(actions, onQueueDoneAction);
+                return AddQueue(queue);
             }
         }
         /// <summary>
@@ -109,16 +158,23 @@ namespace MuonhoryoLibrary.Unity
         /// <param name="actionsList"></param>
         /// <param name="onQueueDoneAction"></param>
         /// <param name="reservator"></param>
-        public void AddActionsQueue(List<Action> actionsList, Action onQueueDoneAction, ThreadQueueReservator reservator)
+        public void AddActionsQueue(IEnumerable<Action> actions, Action onQueueDoneAction, 
+            ThreadQueueReservator reservator)
         {
-            if (!reservator.isBeingUsed)
+            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
+        }
+        public short AddActionsQueue(SingleLinkedList<Action> actions,Action onQueueDoneAction)
+        {
+            lock (locker)
             {
-                lock (locker)
-                {
-                    ThreadActionsQueues.Add(new ThreadActionQueue(actionsList, onQueueDoneAction, reservator.Id));
-                    reservator.SetUse();
-                }
+                ThreadActionQueue queue = new ThreadActionQueue(actions, onQueueDoneAction);
+                return AddQueue(queue);
             }
+        }
+        public void AddActionsQueue(SingleLinkedList<Action> actions,Action onQueueDoneAction,
+            ThreadQueueReservator reservator)
+        {
+            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
         }
         /// <summary>
         /// Cancel executing actions queue at queueId.
@@ -128,13 +184,7 @@ namespace MuonhoryoLibrary.Unity
         {
             lock (locker)
             {
-                for (int i = 0; i < ThreadActionsQueues.Count; i++)
-                {
-                    if (ThreadActionsQueues[i].QueveId == queueId)
-                    {
-                        ThreadActionsQueues.RemoveAt(i);
-                    }
-                }
+                ThreadActionsQueues.RemoveAtPredicate((ThreadActionQueue queue)=>queue.QueueId == queueId);
             }
         }
         private void Awake()
@@ -155,8 +205,8 @@ namespace MuonhoryoLibrary.Unity
                             return;
                         }
                     }
-                    ThreadActionsQueues[0].OnQueveDone.Invoke();
-                    ThreadActionsQueues.RemoveAt(0);
+                    ThreadActionsQueues[0].OnQueueDone.Invoke();
+                    ThreadActionsQueues.RemoveFirst();
                 }
             }
         }
