@@ -105,7 +105,8 @@ namespace MuonhoryoLibrary.UnityEditor
         /// <param name="inspectorLabelText"></param>
         public static void DrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
             SerializedObject serializedObj, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
-            ISerializator serializator,string inspectorLabelText = "")
+            ISerializator serializator,string inspectorLabelText = "",string removeButtonText="",
+            string newElementKeyText="",string addButtonText="")
         {
             if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList, inspectorLabelText))
             {
@@ -135,7 +136,7 @@ namespace MuonhoryoLibrary.UnityEditor
                         EditorGUILayout.PropertyField(
                             serializedObj.FindProperty(dictHelper.CurrentValuePropertyName));
                         serializedObj.ApplyModifiedProperties();
-                        if (GUILayout.Button("Remove"))
+                        if (GUILayout.Button(removeButtonText))
                         {
                             showingDictionary.Remove(keyArray[index]);
                             isChanged = true;
@@ -179,9 +180,9 @@ namespace MuonhoryoLibrary.UnityEditor
                 }
                 //Show adding menu
                 EditorGUILayout.PropertyField(serializedObj.FindProperty(dictHelper.NewKeyPropertyName),
-                    new GUIContent("New element"));
+                    new GUIContent(newElementKeyText));
                 serializedObj.ApplyModifiedProperties();
-                if (GUILayout.Button("Add") && dictHelper.NewKey != null && 
+                if (GUILayout.Button(addButtonText) && dictHelper.NewKey != null && 
                     !showingDictionary.ContainsKey(dictHelper.NewKey))
                 {
                     showingDictionary.Add(dictHelper.NewKey, default);
@@ -199,21 +200,25 @@ namespace MuonhoryoLibrary.UnityEditor
         }
         public static void DrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
            SerializedObject serializedObj, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
-           string inspectorLabelText = "")
+           string inspectorLabelText = "",string removeButtonText="",string newElementKeyText="",
+           string addButtonText="")
         {
             DrawDictionary(showingDictionary, serializedObj, dictHelper,UnityJsonSerializer.Instance,
-                inspectorLabelText);
-        }
-        public static void DrawDictionary<TKey, TValue>(DictionaryUnityEditor<TKey, TValue> editor,
-            string inspectorLabelText = "")
-        {
-            DrawDictionary(editor,UnityJsonSerializer.Instance,inspectorLabelText);
+                inspectorLabelText,removeButtonText,newElementKeyText,addButtonText);
         }
         public static void DrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey,TValue> editor,
-            ISerializator serializator,string inspectorLabelText = "")
+            ISerializator serializator,string inspectorLabelText = "",string removeButtonText="",
+            string newElementKeyText="",string addButtonText="")
         {
             DrawDictionary(editor.DrawableDictionary,editor.serializedObject, editor,serializator,
-                inspectorLabelText);
+                inspectorLabelText,removeButtonText,newElementKeyText,addButtonText);
+        }
+        public static void DrawDictionary<TKey, TValue>(DictionaryUnityEditor<TKey, TValue> editor,
+            string inspectorLabelText = "", string removeButtonText = "", string newElementKeyText = "",
+            string addButtonText = "")
+        {
+            DrawDictionary(editor, UnityJsonSerializer.Instance, inspectorLabelText, removeButtonText,
+                newElementKeyText, addButtonText);
         }
     }
 }
