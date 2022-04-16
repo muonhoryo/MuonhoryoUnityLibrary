@@ -94,6 +94,21 @@ namespace MuonhoryoLibrary.UnityEditor
         {
             DrawInterface(ref interfaceDrawer.DrawedInterface,ref interfaceDrawer.InterfaceComponent, inspectorLabelText);
         }
+
+
+        public static void ReadOnlyDrawInterface<TInterfaceType>(in TInterfaceType drawedInterface,
+            string inspectorLabelText = "") where TInterfaceType : class
+        {
+            EditorGUILayout.ObjectField(inspectorLabelText, drawedInterface as MonoBehaviour,
+                typeof(MonoBehaviour), true);
+        }
+        public static void ReadOnlyDrawInterface<TInterfaceType>(this InterfaceDrawer<TInterfaceType> drawer,
+            string inspectorLabelText = "") where TInterfaceType : class
+        {
+            ReadOnlyDrawInterface(drawer.DrawedInterface, inspectorLabelText);
+        }
+
+
         /// <summary>
         /// Show dictionary in inspector. Provides the ability to edit collection.
         /// </summary>
@@ -108,7 +123,8 @@ namespace MuonhoryoLibrary.UnityEditor
             ISerializator serializator,string inspectorLabelText = "",string removeButtonText="",
             string newElementKeyText="",string addButtonText="")
         {
-            if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList, inspectorLabelText))
+            if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList,
+                inspectorLabelText))
             {
                 showingDictionary = Serialization.Serialization.DictionarySerializator.
                     Read<TKey,TValue>(dictHelper.SerializationPath, serializator);
@@ -219,6 +235,91 @@ namespace MuonhoryoLibrary.UnityEditor
         {
             DrawDictionary(editor, UnityJsonSerializer.Instance, inspectorLabelText, removeButtonText,
                 newElementKeyText, addButtonText);
+        }
+
+
+        public static void ReadOnlyDrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
+            SerializedObject serializedObj, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
+            ISerializator serializator, string inspectorLabelText = "")
+        {
+            if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList,
+                inspectorLabelText))
+            {
+                showingDictionary = Serialization.Serialization.DictionarySerializator.Read<TKey, TValue>(
+                    dictHelper.SerializationPath, serializator);
+                TKey[] keyArray = new TKey[showingDictionary.Count];
+                showingDictionary.Keys.CopyTo(keyArray, 0);
+                {
+                    void ShowHeader(int index, bool isShowingHeader = false)
+                    {
+                        if (EditorGUILayout.BeginToggleGroup(keyArray[index].ToString(), isShowingHeader))
+                        {
+                            dictHelper.CurrentEditIndex = index;
+                            ShowSelected(index);
+                        }
+                        else if (isShowingHeader)
+                        {
+                            dictHelper.CurrentEditIndex = -1;
+                        }
+                        EditorGUILayout.EndToggleGroup();
+                    }
+                    void ShowSelected(int index)
+                    {
+                        dictHelper.CurrentValue = showingDictionary[keyArray[index]];
+                        EditorGUILayout.PropertyField(
+                            serializedObj.FindProperty(dictHelper.CurrentValuePropertyName));
+                    }
+                    void ShowHeaderAndSelected(int index)
+                    {
+                        ShowHeader(index, index == dictHelper.CurrentEditIndex);
+                    }
+
+                    if (dictHelper.CurrentEditIndex >= 0)
+                    {
+                        if (dictHelper.CurrentEditIndex >= showingDictionary.Count)
+                        {
+                            dictHelper.CurrentEditIndex = -1;
+                            for (int i = 0; i < showingDictionary.Count; i++)
+                            {
+                                ShowHeader(i);
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < showingDictionary.Count; i++)
+                            {
+                                ShowHeaderAndSelected(i);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < showingDictionary.Count; i++)
+                        {
+                            ShowHeader(i);
+                        }
+                    }
+                }
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+        public static void ReadOnlyDrawDictionary<TKey, TValue>(Dictionary<TKey, TValue> showingDictionary,
+            SerializedObject serializedObject, IDictionaryEditorDrawHelper<TKey, TValue> dictHelper,
+            string inspectorLabelText = "")
+        {
+            ReadOnlyDrawDictionary(showingDictionary, serializedObject, dictHelper, UnityJsonSerializer.Instance,
+                inspectorLabelText);
+        }
+        public static void ReadOnlyDrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey, TValue>editor,
+            ISerializator serializator,string inspectorLabelText = "")
+        {
+            ReadOnlyDrawDictionary(editor.DrawableDictionary, editor.serializedObject, editor, serializator,
+                inspectorLabelText);
+        }
+        public static void ReadOnlyDrawDictionary<TKey,TValue>(DictionaryUnityEditor<TKey,TValue>editor,
+            string inspectorLabelText = "")
+        {
+            ReadOnlyDrawDictionary(editor, UnityJsonSerializer.Instance, inspectorLabelText);
         }
     }
 }
