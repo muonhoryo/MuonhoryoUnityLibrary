@@ -127,7 +127,7 @@ namespace MuonhoryoLibrary.UnityEditor
                 inspectorLabelText))
             {
                 showingDictionary = Serialization.Serialization.DictionarySerializator.
-                    Read<TKey,TValue>(dictHelper.SerializationPath, serializator);
+                    ReadOrCreateNewFile<TKey,TValue>(dictHelper.SerializationPath, serializator);
                 bool isChanged = false;
                 TKey[] keyArray = new TKey[showingDictionary.Count];
                 showingDictionary.Keys.CopyTo(keyArray, 0);
@@ -208,8 +208,8 @@ namespace MuonhoryoLibrary.UnityEditor
                 //Update dictionary
                 if (isChanged)
                 {
-                    Serialization.Serialization.DictionarySerializator.Write(dictHelper.SerializationPath,
-                        showingDictionary,serializator);
+                    Serialization.Serialization.DictionarySerializator.WriteOrCreateNewFile(
+                        dictHelper.SerializationPath,showingDictionary,serializator);
                 }
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -245,8 +245,8 @@ namespace MuonhoryoLibrary.UnityEditor
             if (dictHelper.isShowingList = EditorGUILayout.BeginFoldoutHeaderGroup(dictHelper.isShowingList,
                 inspectorLabelText))
             {
-                showingDictionary = Serialization.Serialization.DictionarySerializator.Read<TKey, TValue>(
-                    dictHelper.SerializationPath, serializator);
+                showingDictionary = Serialization.Serialization.DictionarySerializator.
+                    ReadOrCreateNewFile<TKey, TValue>(dictHelper.SerializationPath, serializator);
                 TKey[] keyArray = new TKey[showingDictionary.Count];
                 showingDictionary.Keys.CopyTo(keyArray, 0);
                 {
