@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using MuonhoryoLibrary.UnityEditor;
 
 namespace MuonhoryoLibrary.Unity
 {
@@ -12,6 +13,18 @@ namespace MuonhoryoLibrary.Unity
         public static int GetLayerMask(this int layer)
         {
             return (int)Mathf.Pow(2, layer);
+        }
+
+        /// <summary>
+        /// Translate InterfaceComponent as TInterfaceType and set it in DrawedInterface.
+        /// </summary>
+        public static void InitInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> drawer)
+            where TInterfaceType : class
+        {
+            if (drawer.DrawedInterface == null)
+            {
+                drawer.DrawedInterface =drawer.InterfaceComponent as TInterfaceType;
+            }
         }
     }
 }

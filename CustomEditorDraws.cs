@@ -15,6 +15,11 @@ namespace MuonhoryoLibrary.UnityEditor
         string CurrentValuePropertyName { get; }
         int CurrentEditIndex { get; set; }
     }
+    public interface IInterfaceDrawer<TInterfaceType> where TInterfaceType : class
+    {
+        TInterfaceType DrawedInterface { get; set; }
+        MonoBehaviour InterfaceComponent { get; set; }
+    }
     public abstract class DictionaryUnityEditor<TKey, TValue> : Editor,IDictionaryEditorDrawHelper<TKey,TValue>
     {
         public abstract Dictionary<TKey,TValue> DrawableDictionary { get; }
@@ -35,25 +40,6 @@ namespace MuonhoryoLibrary.UnityEditor
         {
             get => currentEditIndex;
             set => currentEditIndex = value;
-        }
-    }
-    /// <summary>
-    /// Help to draw interface.
-    /// </summary>
-    /// <typeparam name="TInterfaceType"></typeparam>
-    public class InterfaceDrawer<TInterfaceType> where TInterfaceType:class
-    {
-        public TInterfaceType DrawedInterface;
-        public MonoBehaviour InterfaceComponent;
-        /// <summary>
-        /// Translate InterfaceComponent as TInterfaceType and set his in DrawedInterface.
-        /// </summary>
-        public void InitializeInterface()
-        {
-            if (DrawedInterface == null)
-            {
-                DrawedInterface=InterfaceComponent as TInterfaceType;
-            }
         }
     }
     public static class EditorDraws
@@ -89,10 +75,34 @@ namespace MuonhoryoLibrary.UnityEditor
                 EditorUtility.SetDirty(sourceComponent);
             }
         }
-        public static void DrawInterface<TInterfaceType>(this InterfaceDrawer<TInterfaceType> interfaceDrawer,
+        public static void DrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> interfaceDrawer,
             string inspectorLabelText = "") where TInterfaceType : class
         {
-            DrawInterface(ref interfaceDrawer.DrawedInterface,ref interfaceDrawer.InterfaceComponent, inspectorLabelText);
+            bool tryGetInterfaceInHierarchy()
+            {
+                interfaceDrawer.DrawedInterface =
+                    interfaceDrawer.InterfaceComponent.GetComponent<TInterfaceType>();
+                return interfaceDrawer.DrawedInterface == null;
+            }
+            TInterfaceType oldInterface = interfaceDrawer.DrawedInterface;
+            interfaceDrawer.InterfaceComponent = EditorGUILayout.ObjectField(inspectorLabelText,
+                interfaceDrawer.InterfaceComponent, typeof(MonoBehaviour), true) as MonoBehaviour;
+            if (interfaceDrawer.InterfaceComponent != null)
+            {
+                interfaceDrawer.DrawedInterface = interfaceDrawer.InterfaceComponent as TInterfaceType;
+                if (interfaceDrawer.DrawedInterface == null && !tryGetInterfaceInHierarchy())
+                {
+                    interfaceDrawer.InterfaceComponent = null;
+                }
+                else
+                {
+                    interfaceDrawer.InterfaceComponent = interfaceDrawer.DrawedInterface as MonoBehaviour;
+                }
+            }
+            if (oldInterface != interfaceDrawer.DrawedInterface)
+            {
+                EditorUtility.SetDirty(interfaceDrawer.InterfaceComponent);
+            }
         }
 
 
@@ -102,7 +112,7 @@ namespace MuonhoryoLibrary.UnityEditor
             EditorGUILayout.ObjectField(inspectorLabelText, drawedInterface as MonoBehaviour,
                 typeof(MonoBehaviour), true);
         }
-        public static void ReadOnlyDrawInterface<TInterfaceType>(this InterfaceDrawer<TInterfaceType> drawer,
+        public static void ReadOnlyDrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> drawer,
             string inspectorLabelText = "") where TInterfaceType : class
         {
             ReadOnlyDrawInterface(drawer.DrawedInterface, inspectorLabelText);
