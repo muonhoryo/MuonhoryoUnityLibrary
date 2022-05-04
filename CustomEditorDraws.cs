@@ -51,30 +51,6 @@ namespace MuonhoryoLibrary.UnityEditor
         /// <param name="serializableInterface"></param>
         /// <param name="sourceComponent"></param>
         /// <param name="inspectorLabelText"></param>
-        public static void DrawInterface<TInterfaceType>(ref TInterfaceType serializableInterface,
-            ref MonoBehaviour sourceComponent,string inspectorLabelText = "")
-            where TInterfaceType : class
-        {
-            TInterfaceType oldInterface = serializableInterface;
-            sourceComponent = EditorGUILayout.ObjectField(inspectorLabelText,
-                sourceComponent, typeof(MonoBehaviour), true) as MonoBehaviour;
-            if (sourceComponent != null)
-            {
-                serializableInterface = sourceComponent as TInterfaceType;
-                if (serializableInterface == null && !sourceComponent.TryGetComponent(out serializableInterface))
-                {
-                    sourceComponent = null;
-                }
-                else
-                {
-                    sourceComponent = serializableInterface as MonoBehaviour;
-                }
-            }
-            if (oldInterface != serializableInterface)
-            {
-                EditorUtility.SetDirty(sourceComponent);
-            }
-        }
         public static void DrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> interfaceDrawer,
             string inspectorLabelText = "") where TInterfaceType : class
         {
@@ -101,7 +77,7 @@ namespace MuonhoryoLibrary.UnityEditor
             }
             if (oldInterface != interfaceDrawer.DrawedInterface)
             {
-                EditorUtility.SetDirty(interfaceDrawer.InterfaceComponent);
+                EditorUtility.SetDirty(interfaceDrawer as MonoBehaviour);
             }
         }
 
