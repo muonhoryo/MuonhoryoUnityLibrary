@@ -54,30 +54,37 @@ namespace MuonhoryoLibrary.UnityEditor
         public static void DrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> interfaceDrawer,
             string inspectorLabelText = "") where TInterfaceType : class
         {
+            MonoBehaviour oldComponent = interfaceDrawer.InterfaceComponent;
+            MonoBehaviour component = EditorGUILayout.ObjectField(inspectorLabelText,
+                interfaceDrawer.InterfaceComponent, typeof(MonoBehaviour), true) as MonoBehaviour;
             bool tryGetInterfaceInHierarchy()
             {
-                interfaceDrawer.DrawedInterface =
-                    interfaceDrawer.InterfaceComponent.GetComponent<TInterfaceType>();
-                return interfaceDrawer.DrawedInterface == null;
+                interfaceDrawer.DrawedInterface = component.GetComponent<TInterfaceType>();
+                return interfaceDrawer.DrawedInterface != null;
             }
-            TInterfaceType oldInterface = interfaceDrawer.DrawedInterface;
-            interfaceDrawer.InterfaceComponent = EditorGUILayout.ObjectField(inspectorLabelText,
-                interfaceDrawer.InterfaceComponent, typeof(MonoBehaviour), true) as MonoBehaviour;
-            if (interfaceDrawer.InterfaceComponent != null)
+            if (oldComponent != component)
             {
-                interfaceDrawer.DrawedInterface = interfaceDrawer.InterfaceComponent as TInterfaceType;
-                if (interfaceDrawer.DrawedInterface == null && !tryGetInterfaceInHierarchy())
+                if (component != null)
                 {
-                    interfaceDrawer.InterfaceComponent = null;
+                    interfaceDrawer.DrawedInterface = component as TInterfaceType;
+                    if (interfaceDrawer.DrawedInterface == null && !tryGetInterfaceInHierarchy())
+                    {
+                        interfaceDrawer.InterfaceComponent = null;
+                    }
+                    else
+                    {
+                        interfaceDrawer.InterfaceComponent = interfaceDrawer.DrawedInterface as MonoBehaviour;
+                    }
                 }
                 else
                 {
-                    interfaceDrawer.InterfaceComponent = interfaceDrawer.DrawedInterface as MonoBehaviour;
+                    interfaceDrawer.InterfaceComponent = null;
+                    interfaceDrawer.DrawedInterface = null;
                 }
-            }
-            if (oldInterface != interfaceDrawer.DrawedInterface)
-            {
-                EditorUtility.SetDirty(interfaceDrawer as MonoBehaviour);
+                if (oldComponent != interfaceDrawer.InterfaceComponent)
+                {
+                    EditorUtility.SetDirty(interfaceDrawer as MonoBehaviour);
+                }
             }
         }
 
