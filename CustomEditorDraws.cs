@@ -18,7 +18,7 @@ namespace MuonhoryoLibrary.UnityEditor
     public interface IInterfaceDrawer<TInterfaceType> where TInterfaceType : class
     {
         TInterfaceType DrawedInterface { get; set; }
-        MonoBehaviour InterfaceComponent { get; set; }
+        Component InterfaceComponent { get; set; }
     }
     public abstract class DictionaryUnityEditor<TKey, TValue> : Editor,IDictionaryEditorDrawHelper<TKey,TValue>
     {
@@ -54,37 +54,44 @@ namespace MuonhoryoLibrary.UnityEditor
         public static void DrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> interfaceDrawer,
             string inspectorLabelText = "") where TInterfaceType : class
         {
-            MonoBehaviour oldComponent = interfaceDrawer.InterfaceComponent;
-            MonoBehaviour component = EditorGUILayout.ObjectField(inspectorLabelText,
-                interfaceDrawer.InterfaceComponent, typeof(MonoBehaviour), true) as MonoBehaviour;
-            bool tryGetInterfaceInHierarchy()
-            {
-                interfaceDrawer.DrawedInterface = component.GetComponent<TInterfaceType>();
-                return interfaceDrawer.DrawedInterface != null;
-            }
+            Object oldComponent = interfaceDrawer.InterfaceComponent;
+            Object component = interfaceDrawer.InterfaceComponent;
+            component = EditorGUILayout.ObjectField(inspectorLabelText,
+                component, typeof(Object), true);
             if (oldComponent != component)
             {
-                if (component != null)
+                if (component == null)
                 {
-                    interfaceDrawer.DrawedInterface = component as TInterfaceType;
-                    if (interfaceDrawer.DrawedInterface == null && !tryGetInterfaceInHierarchy())
+                    interfaceDrawer.DrawedInterface= null;
+                    interfaceDrawer.InterfaceComponent= null;
+                }
+                else if (component is Component)
+                {
+                    if (!(component is TInterfaceType))
                     {
-                        interfaceDrawer.InterfaceComponent = null;
+                        tryGetInterfaceInGameObject((component as Component).gameObject);
                     }
                     else
                     {
-                        interfaceDrawer.InterfaceComponent = interfaceDrawer.DrawedInterface as MonoBehaviour;
+                        interfaceDrawer.InterfaceComponent = component as Component;
+                        interfaceDrawer.DrawedInterface = interfaceDrawer.InterfaceComponent as TInterfaceType;
                     }
                 }
                 else
                 {
-                    interfaceDrawer.InterfaceComponent = null;
-                    interfaceDrawer.DrawedInterface = null;
+                    tryGetInterfaceInGameObject(component as GameObject);
                 }
                 if (oldComponent != interfaceDrawer.InterfaceComponent)
                 {
                     EditorUtility.SetDirty(interfaceDrawer as MonoBehaviour);
                 }
+            }
+            bool tryGetInterfaceInGameObject(GameObject gameObject)
+            {
+                interfaceDrawer.InterfaceComponent = gameObject.GetComponent<TInterfaceType>()
+                    as Component;
+                interfaceDrawer.DrawedInterface = interfaceDrawer.InterfaceComponent as TInterfaceType;
+                return interfaceDrawer.DrawedInterface != null;
             }
         }
 
