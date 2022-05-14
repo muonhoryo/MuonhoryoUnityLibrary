@@ -45,7 +45,8 @@ namespace MuonhoryoLibrary.UnityEditor
     public static class EditorDraws
     {
         /// <summary>
-        /// Show interface field in inspector. Interface must be inherted by the component.
+        /// Shows interface field in inspector. Interface must be inherted by the Component.
+        /// Sets drawer dirty and update interfaceField if component was changed.
         /// </summary>
         /// <typeparam name="TInterfaceType"></typeparam>
         /// <param name="serializableInterface"></param>
@@ -94,13 +95,61 @@ namespace MuonhoryoLibrary.UnityEditor
                 return interfaceDrawer.DrawedInterface != null;
             }
         }
+        /// <summary>
+        /// Shows interface field in inspector. Interface must be inherted by the Component.
+        /// </summary>
+        /// <typeparam name="TInterfaceType"></typeparam>
+        /// <param name="serializableInterface"></param>
+        /// <param name="sourceComponent"></param>
+        /// <param name="inspectorLabelText"></param>
+        public static void DrawInterface<TInterfaceType>(ref Component interfaceComponent,
+            ref TInterfaceType drawedInterface,string inspectorLabelText="") 
+            where TInterfaceType:class
+        {
+            if(DrawInterfaceComponent<TInterfaceType>(ref interfaceComponent, inspectorLabelText))
+            {
+                drawedInterface = interfaceComponent as TInterfaceType;
+            }
+        }
+        /// <summary>
+        /// Shows interface field in inspector. Dont update interface field.
+        /// Returns true if component's field was updated.
+        /// </summary>
+        /// <typeparam name="TInterfaceType"></typeparam>
+        /// <param name="interfaceComponent"></param>
+        /// <param name="inspectorLabelText"></param>
+        public static bool DrawInterfaceComponent<TInterfaceType>(ref Component interfaceComponent,
+            string inspectorLabelText = "") where TInterfaceType:class
+        {
+            Object component = interfaceComponent;
+            component = EditorGUILayout.ObjectField(inspectorLabelText, component,
+                typeof(Object), true);
+            if (component != interfaceComponent)
+            {
+                if (component == null)
+                {
+                    interfaceComponent = null;
+                }
+                else if (component is Component)
+                {
+                    interfaceComponent = component as Component;
+                }
+                else
+                {
+                    interfaceComponent = (component as GameObject).GetComponent
+                        <TInterfaceType>() as Component;
+                }
+                return true;
+            }
+            return false;
+        }
 
 
         public static void ReadOnlyDrawInterface<TInterfaceType>(in TInterfaceType drawedInterface,
             string inspectorLabelText = "") where TInterfaceType : class
         {
-            EditorGUILayout.ObjectField(inspectorLabelText, drawedInterface as MonoBehaviour,
-                typeof(MonoBehaviour), true);
+            EditorGUILayout.ObjectField(inspectorLabelText, drawedInterface as Component,
+                typeof(Component), true);
         }
         public static void ReadOnlyDrawInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> drawer,
             string inspectorLabelText = "") where TInterfaceType : class
