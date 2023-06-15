@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using MuonhoryoLibrary.Collections;
+using Microsoft.Win32;
+using System.Threading;
 
 namespace MuonhoryoLibrary.Unity
 {
@@ -21,14 +23,6 @@ namespace MuonhoryoLibrary.Unity
     /// </summary>
     public class ThreadManager : MonoBehaviour, ISingltone<ThreadManager>
     {
-        /// <summary>
-        /// Maximum time for executing actions queue in one frame. Default value=5f.
-        /// </summary>
-        protected virtual float MaxFrameTime { get=>5; }
-        private static readonly object locker = new object();
-        /// <summary>
-        /// Reserves Id for deferred queue adding. 
-        /// </summary>
         public sealed class ThreadQueueReservator
         {
             public ThreadQueueReservator()
@@ -42,6 +36,14 @@ namespace MuonhoryoLibrary.Unity
                 isBeingUsed = true;
             }
         }
+        /// <summary>
+        /// Maximum time for executing actions queue in one frame. Default value=5f.
+        /// </summary>
+        protected virtual float MaxFrameTime { get=>5; }
+        private static readonly object locker = new object();
+        /// <summary>
+        /// Reserves Id for deferred queue adding. 
+        /// </summary>
         private static short NextId = short.MinValue;
         private sealed class ThreadActionQueue : IEnumerable<Action>
         {
@@ -58,7 +60,7 @@ namespace MuonhoryoLibrary.Unity
                 }
                 private Action GetCurrentAction()
                 {
-                    if (ActionsQueue.Count <= 0)
+                    if (ActionsQueue.Count_ <= 0)
                     {
                         throw new IndexOutOfRangeException("ActionsQueue.Count");
                     }
@@ -70,7 +72,7 @@ namespace MuonhoryoLibrary.Unity
                 Action IEnumerator<Action>.Current => GetCurrentAction();
                 bool IEnumerator.MoveNext()
                 {
-                    if (ActionsQueue.Count > 0)
+                    if (ActionsQueue.Count_ > 0)
                     {
                         return true;
                     }
@@ -117,13 +119,39 @@ namespace MuonhoryoLibrary.Unity
         //Singltone
         private static ThreadManager singltone;
         ThreadManager ISingltone<ThreadManager>.Singltone { get => singltone; set => singltone = value; }
-
         private short AddQueue(ThreadActionQueue queue)
         {
             ThreadActionsQueues.AddLast(queue);
             return queue.QueueId;
         }
-        private void AddQueueWithReservator(ThreadActionQueue queue,ThreadQueueReservator reservator)
+        private void Awake()
+        {
+            SingltoneInitializations.InitializationForFirstExample(this, () => { });
+        }
+        private void Update()
+        {
+            lock (locker)
+            {
+                while (ThreadActionsQueues.Count_ > 0)
+                {
+                    foreach (Action action in ThreadActionsQueues[0])
+                    {
+                        action();
+                        if (Time.timeSinceLevelLoad > MaxFrameTime)
+                        {
+                            return;
+                        }
+                    }
+                    ThreadActionsQueues[0].OnQueueDone.Invoke();
+                    ThreadActionsQueues.RemoveFirst();
+                }
+            }
+        }
+        void ISingltone<ThreadManager>.Destroy()
+        {
+            Destroy(this);
+        }
+        private void AddQueueWithReservator(ThreadActionQueue queue, ThreadQueueReservator reservator)
         {
             if (!reservator.isBeingUsed)
             {
@@ -138,6 +166,31 @@ namespace MuonhoryoLibrary.Unity
                 throw new InvalidIdReservatorException("reservator");
             }
         }
+
+
+        /// <summary>
+        /// Add actions in queue with reserved id.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <param name="reservator"></param>
+        public void AddActionsQueue(IEnumerable<Action> actions, Action onQueueDoneAction,
+            ThreadQueueReservator reservator)
+        {
+            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
+        }
+        /// <summary>
+        /// Add actions in queue with reserved id.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <param name="reservator"></param>
+        public void AddActionsQueue(SingleLinkedList<Action> actions, Action onQueueDoneAction,
+            ThreadQueueReservator reservator)
+        {
+            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
+        }
+
         /// <summary>
         /// Add actions in queue. Executed actions are removed from queue.
         /// </summary>
@@ -153,17 +206,12 @@ namespace MuonhoryoLibrary.Unity
             }
         }
         /// <summary>
-        /// Add actions in queue with reserved id.
+        /// Add actions in queue. Executed actions are removed from queue.
         /// </summary>
         /// <param name="actionsList"></param>
         /// <param name="onQueueDoneAction"></param>
-        /// <param name="reservator"></param>
-        public void AddActionsQueue(IEnumerable<Action> actions, Action onQueueDoneAction, 
-            ThreadQueueReservator reservator)
-        {
-            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
-        }
-        public short AddActionsQueue(SingleLinkedList<Action> actions,Action onQueueDoneAction)
+        /// <returns></returns>
+        public short AddActionsQueue(SingleLinkedList<Action> actions, Action onQueueDoneAction)
         {
             lock (locker)
             {
@@ -171,10 +219,45 @@ namespace MuonhoryoLibrary.Unity
                 return AddQueue(queue);
             }
         }
-        public void AddActionsQueue(SingleLinkedList<Action> actions,Action onQueueDoneAction,
-            ThreadQueueReservator reservator)
+        /// <summary>
+        /// Add actions in queue. Executed actions are removed from queue.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <returns></returns>
+        public short AddActionsQueue(Action mainThreadAction, Action onEndAction)
         {
-            AddQueueWithReservator(new ThreadActionQueue(actions, onQueueDoneAction), reservator);
+            return AddActionsQueue(new Action[1] { mainThreadAction }, onEndAction);
+        }
+        /// <summary>
+        /// Add actions in queue. Executed actions are removed from queue.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <returns></returns>
+        public short AddActionsQueue(Action mainThreadAction, AutoResetEvent handler)
+        {
+            return AddActionsQueue(mainThreadAction, () => handler.Set());
+        }
+        /// <summary>
+        /// Add actions in queue. Executed actions are removed from queue.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <returns></returns>
+        public short AddActionsQueue(Action mainThreadAction)
+        {
+            return AddActionsQueue(mainThreadAction, () => { });
+        }
+        /// <summary>
+        /// Add actions in queue. Executed actions are removed from queue.
+        /// </summary>
+        /// <param name="actionsList"></param>
+        /// <param name="onQueueDoneAction"></param>
+        /// <returns></returns>
+        public short AddActionsQueue(IEnumerable<Action> mainThreadActions, AutoResetEvent handler)
+        {
+            return AddActionsQueue(mainThreadActions, () => handler.Set());
         }
         /// <summary>
         /// Cancel executing actions queue at queueId.
@@ -184,31 +267,70 @@ namespace MuonhoryoLibrary.Unity
         {
             lock (locker)
             {
-                ThreadActionsQueues.RemoveAtPredicate((ThreadActionQueue queue)=>queue.QueueId == queueId);
+                ThreadActionsQueues.RemoveAtPredicate((ThreadActionQueue queue) => queue.QueueId == queueId);
             }
         }
-        private void Awake()
+    }
+    public abstract class AsyncFacade
+    {
+        protected AsyncFacade()
         {
-            Singltone.Initialization(this, delegate { Destroy(this); }, delegate { });
+            InitializeEvent += InitializeAction;
+            StartEvent += StartAction;
+            EndEvent += EndAction;
         }
-        private void Update()
+        protected readonly AutoResetEvent Handler = new AutoResetEvent(false);
+        protected Thread CurrentThread;
+        private static object lockObj = new object();
+        protected abstract ThreadManager ThreadManager { get; }
+
+        protected void WaitAndReset()
         {
-            lock (locker)
+            Handler.WaitOne();
+            Handler.Reset();
+        }
+        /// <summary>
+        /// Check on nullable
+        /// </summary>
+        /// <param name="ev"></param>
+        protected void DelegateEventExecutingToTM(Action ev)
+        {
+            if (ev != null)
+                ThreadManager.AddActionsQueue(ev, Handler);
+            else
+                Handler.Set();
+        }
+        protected void RunAsyncAndWait(Action runningAsyncAction)
+        {
+            runningAsyncAction();
+            WaitAndReset();
+        }
+
+        public event Action InitializeEvent;
+        public event Action StartEvent;
+        public event Action EndEvent;
+        protected virtual void InitializeAction() { }
+        protected virtual void StartAction() { }
+        protected virtual void EndAction() { }
+
+        public void InitializeAndStart()
+        {
+            InitializeEvent();
+            CurrentThread = new Thread(new ThreadStart(AsyncExecute));
+            Initialize();
+            CurrentThread.Start();
+        }
+        protected abstract void Initialize();
+        private void AsyncExecute()
+        {
+            lock (lockObj)
             {
-                while (ThreadActionsQueues.Count > 0)
-                {
-                    foreach (Action action in ThreadActionsQueues[0])
-                    {
-                        action();
-                        if (Time.timeSinceLevelLoad > MaxFrameTime)
-                        {
-                            return;
-                        }
-                    }
-                    ThreadActionsQueues[0].OnQueueDone.Invoke();
-                    ThreadActionsQueues.RemoveFirst();
-                }
+                DelegateEventExecutingToTM(StartEvent);
+                WaitAndReset();
+                AsyncAction();
+                ThreadManager.AddActionsQueue(EndEvent);
             }
         }
+        protected abstract void AsyncAction();
     }
 }

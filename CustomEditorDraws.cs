@@ -370,5 +370,17 @@ namespace MuonhoryoLibrary.UnityEditor
         {
             ReadOnlyDrawDictionary(editor, UnityJsonSerializer.Instance, inspectorLabelText);
         }
+
+        /// <summary>
+        /// Translate InterfaceComponent as TInterfaceType and set it in DrawedInterface.
+        /// </summary>
+        public static void InitInterface<TInterfaceType>(this IInterfaceDrawer<TInterfaceType> drawer)
+            where TInterfaceType : class
+        {
+            if (drawer.DrawedInterface == null)
+            {
+                drawer.DrawedInterface = drawer.InterfaceComponent as TInterfaceType;
+            }
+        }
     }
 }
