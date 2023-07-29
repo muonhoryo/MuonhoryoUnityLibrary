@@ -18,7 +18,6 @@ C:\Users\muon1\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\obj\Debu
 C:\Users\muon1\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\obj\Debug\MuonhoryoUnityLibrary.pdb
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoUnityLibrary.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoUnityLibrary.pdb
-C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoLibrary.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\Unity.Cecil.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\Unity.SerializationLogic.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\Unity.Legacy.NRefactory.dll

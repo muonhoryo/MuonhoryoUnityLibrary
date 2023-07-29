@@ -38,7 +38,7 @@ namespace MuonhoryoLibrary.Unity
         public static Vector2 DirectionOfAngle(this float degressAngle)
         {
             float radAngle = degressAngle * Mathf.Deg2Rad;
-            return new Vector2(Mathf.Sin(radAngle), -Mathf.Cos(radAngle));
+            return new Vector2(-Mathf.Sin(radAngle), Mathf.Cos(radAngle));
         }
         public static bool IsInLayerMask(this int layer, int layerMask)
         {
