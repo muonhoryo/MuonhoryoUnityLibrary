@@ -38,7 +38,7 @@ namespace MuonhoryoLibrary.Unity
         public static Vector2 DirectionOfAngle(this float degressAngle)
         {
             float radAngle = degressAngle * Mathf.Deg2Rad;
-            return new Vector2(-Mathf.Sin(radAngle), Mathf.Cos(radAngle));
+            return new Vector2(Mathf.Cos(radAngle), Mathf.Sin(radAngle));
         }
         public static bool IsInLayerMask(this int layer, int layerMask)
         {
@@ -72,7 +72,7 @@ namespace MuonhoryoLibrary.Unity
                 else
                     return 270;
             }
-            float angle = Mathf.Atan(direction.y / direction.x) * Mathf.Rad2Deg;
+            float angle = Mathf.Atan(direction.x / direction.y) * Mathf.Rad2Deg;
             if (direction.x < 0)
             {
                 angle += 180;
