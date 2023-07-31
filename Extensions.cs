@@ -73,7 +73,7 @@ namespace MuonhoryoLibrary.Unity
                     return 270;
             }
             float angle = Mathf.Atan(direction.y / direction.x) * Mathf.Rad2Deg;
-            if (direction.y < 0)
+            if (direction.x < 0)
             {
                 angle += 180;
             }
