@@ -55,7 +55,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomEditorDraws.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MultiThreading.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

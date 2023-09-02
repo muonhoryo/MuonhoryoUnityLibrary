@@ -127,6 +127,8 @@ namespace MuonhoryoLibrary.Unity
         private void Awake()
         {
             SingltoneInitializations.InitializationForFirstExample(this, () => { });
+            if (!enabled)
+                enabled = true;
         }
         private void Update()
         {
@@ -146,6 +148,10 @@ namespace MuonhoryoLibrary.Unity
                     ThreadActionsQueues.RemoveFirst();
                 }
             }
+        }
+        private void OnDisable()
+        {
+            enabled = true;
         }
         void ISingltone<ThreadManager>.Destroy()
         {
