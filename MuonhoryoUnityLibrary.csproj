@@ -58,6 +58,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="COM\Interfaces\IActiveModule.cs" />
+    <Compile Include="COM\ModuleSelector.cs" />
     <Compile Include="Debug-console\DebugConsole.cs" />
     <Compile Include="Debug-console\DebugConsoleController.cs" />
     <Compile Include="Debug-console\DebugConsoleInputField.cs" />
@@ -69,5 +71,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Timer.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
