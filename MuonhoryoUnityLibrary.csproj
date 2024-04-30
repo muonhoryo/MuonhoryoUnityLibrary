@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="CompositeParameters\CompositeVector3.cs" />
     <Compile Include="COM\Interfaces\IActiveModule.cs" />
+    <Compile Include="COM\Interfaces\IConstProvider.cs" />
     <Compile Include="COM\ModuleSelector.cs" />
     <Compile Include="Debug-console\DebugConsole.cs" />
     <Compile Include="Debug-console\DebugConsoleController.cs" />
