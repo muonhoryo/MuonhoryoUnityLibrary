@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositeParameters\CompositeVector2.cs" />
     <Compile Include="CompositeParameters\CompositeVector3.cs" />
     <Compile Include="COM\Interfaces\IActiveModule.cs" />
     <Compile Include="COM\Interfaces\IConstProvider.cs" />
