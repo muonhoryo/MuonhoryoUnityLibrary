@@ -27,3 +27,12 @@ C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\obj\Debug
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoLibrary.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\UnityEngine.UI.dll
 C:\Users\User\Desktop\create\c#\MuonhoryoLibrary\MuonhoryoUnityLibrary\bin\Debug\UnityEngine.UI.pdb
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoUnityLibrary.dll
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoUnityLibrary.pdb
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\bin\Debug\MuonhoryoLibrary.pdb
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\bin\Debug\UnityEngine.UI.pdb
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\obj\Debug\MuonhoryoUnityLibrary.csproj.AssemblyReference.cache
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\obj\Debug\MuonhoryoUnityLibrary.csproj.CoreCompileInputs.cache
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\obj\Debug\Muonhory.EE0A705B.Up2Date
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\obj\Debug\MuonhoryoUnityLibrary.dll
+D:\MuonhoryoUnityLibrary\MuonhoryoUnityLibrary\obj\Debug\MuonhoryoUnityLibrary.pdb

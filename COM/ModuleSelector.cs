@@ -25,9 +25,10 @@ namespace MuonhoryoLibrary.Unity.COM
             {
                 if (IsActive != value)
                 {
+                    IsActive = value;
+                    enabled = value;
                     if (CurrentModule_ is IActiveModule module)
                         module.IsActive = value;
-                    IsActive = value;
                     if (value)
                     {
                         ActivateModuleEvent();
@@ -100,6 +101,7 @@ namespace MuonhoryoLibrary.Unity.COM
                         ($"Cant parsed {SelectedModules[i].name} to {typeof(TSelectedModule)}.");
             }
             ParsedSelectedModules = null;
+            enabled = false;
             SelectModule(CurrentModuleIndex);
         }
     }
