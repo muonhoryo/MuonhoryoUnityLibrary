@@ -44,7 +44,7 @@ namespace MuonhoryoLibrary.Unity.COM
 
         public void SelectModule(int moduleIndex)
         {
-            if (moduleIndex < 0 || moduleIndex >= SelectedModules.Length)
+            if (moduleIndex < 0 || moduleIndex >= ParsedSelectedModules.Length)
                 throw new ArgumentException("startModuleIndex must be index of input modules's array.");
 
             if (moduleIndex != CurrentModuleIndex_)
