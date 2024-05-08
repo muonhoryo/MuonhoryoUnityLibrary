@@ -100,7 +100,7 @@ namespace MuonhoryoLibrary.Unity.COM
                     throw new ArgumentNullException
                         ($"Cant parsed {SelectedModules[i].name} to {typeof(TSelectedModule)}.");
             }
-            ParsedSelectedModules = null;
+            SelectedModules = null;
             enabled = false;
             SelectModule(CurrentModuleIndex);
         }
