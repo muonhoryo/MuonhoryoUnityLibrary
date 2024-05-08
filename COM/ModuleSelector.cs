@@ -86,7 +86,7 @@ namespace MuonhoryoLibrary.Unity.COM
         {
             if (SelectedModules == null || SelectedModules.Length == 0)
                 throw new ArgumentNullException("Haven't modules for selection.");
-            if (CurrentModuleIndex < 0 || CurrentModuleIndex > ParsedSelectedModules.Length - 1)
+            if (CurrentModuleIndex < 0 || CurrentModuleIndex > SelectedModules.Length - 1)
                 throw new ArgumentException("Haven't module by index = " + CurrentModuleIndex);
 
             ParsedSelectedModules=new TSelectedModule[SelectedModules.Length];
