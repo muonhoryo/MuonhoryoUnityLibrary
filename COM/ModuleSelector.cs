@@ -14,7 +14,7 @@ namespace MuonhoryoLibrary.Unity.COM
         [SerializeField] private MonoBehaviour[] SelectedModules;
         private TSelectedModule[] ParsedSelectedModules;
         [SerializeField]private int CurrentModuleIndex=0;
-        public int CurrentModuleIndex_ => CurrentModuleIndex;
+        public int CurrentModuleIndex_ { get; private set; } = -1;
         public TSelectedModule CurrentModule_ { get; private set; }
         private bool IsActive = false;
 
@@ -62,7 +62,7 @@ namespace MuonhoryoLibrary.Unity.COM
                     if (CurrentModule_ is IActiveModule module)
                         module.IsActive = true;
                 }
-                CurrentModuleIndex = moduleIndex;
+                CurrentModuleIndex_ = moduleIndex;
 
                 SelectModuleEvent(CurrentModule_);
             }
